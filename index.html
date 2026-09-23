@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>How Was Your Meal?</title>
+  <meta name="description" content="Tell us how your meal was — it takes ten seconds." />
+  <meta name="theme-color" content="#f6efe4" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f6efe4;
+      --card: #fffaf2;
+      --ink: #2a211b;
+      --muted: #7a6a5c;
+      --line: #e6d9c6;
+      --accent: #c2492b;      /* tomato */
+      --accent-ink: #fff;
+      --gold: #e8a33d;
+      --gold-soft: #f7dfb4;
+      --leaf: #4f7a4a;
+      --shadow: 0 1px 2px rgba(60, 40, 20, .06), 0 12px 40px -12px rgba(60, 40, 20, .25);
+      --radius: 22px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #1b1612;
+        --card: #241d18;
+        --ink: #f3e9dc;
+        --muted: #b3a291;
+        --line: #3a2f27;
+        --accent: #e0694a;
+        --gold: #f0b252;
+        --gold-soft: #4a3a22;
+        --leaf: #8cb886;
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px -12px rgba(0,0,0,.6);
+      }
+    }
+    :root[data-theme="dark"] {
+      --paper: #1b1612; --card: #241d18; --ink: #f3e9dc; --muted: #b3a291; --line: #3a2f27;
+      --accent: #e0694a; --gold: #f0b252; --gold-soft: #4a3a22; --leaf: #8cb886;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px -12px rgba(0,0,0,.6);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100dvh;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 70%),
+        var(--paper);
+      color: var(--ink);
+      font: 16px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* faint tablecloth grid */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(color-mix(in srgb, var(--accent) 5%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--accent) 5%, transparent) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    main {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 460px;
+    }
+
+    .ticket {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 34px 26px 28px;
+      overflow: hidden;
+    }
+    /* perforated "receipt" edge */
+    .ticket::after {
+      content: "";
+      position: absolute; left: 0; right: 0; bottom: -1px; height: 12px;
+      background: radial-gradient(circle at 8px 12px, var(--paper) 6px, transparent 6.5px) 0 0 / 16px 12px repeat-x;
+    }
+
+    .plate {
+      width: 88px; height: 88px; margin: 0 auto 18px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--card) 52%, var(--line) 53%, var(--line) 56%, var(--card) 57%);
+      border: 1px solid var(--line);
+      font-size: 38px;
+      transition: transform .5s cubic-bezier(.3,1.6,.5,1);
+    }
+    .plate.spin { transform: rotate(-14deg) scale(1.06); }
+
+    .eyebrow {
+      text-align: center;
+      font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--muted); margin: 0 0 6px;
+    }
+    h1, h2 {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 600;
+      text-align: center;
+      margin: 0;
+      letter-spacing: -.01em;
+    }
+    h1 { font-size: clamp(28px, 7vw, 36px); line-height: 1.1; }
+    h2 { font-size: 26px; line-height: 1.15; }
+    h1 em, h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
+    .lede { text-align: center; color: var(--muted); margin: 10px auto 0; max-width: 32ch; }
+
+    /* ---------- stars ---------- */
+    .stars {
+      display: flex; justify-content: center; gap: 6px;
+      margin: 28px 0 8px;
+      border: 0; padding: 0;
+    }
+    .stars legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .star {
+      appearance: none; -webkit-appearance: none;
+      border: 0; background: none; padding: 4px; margin: 0;
+      cursor: pointer;
+      width: 58px; height: 58px;
+      border-radius: 14px;
+      color: var(--line);
+      transition: transform .18s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .star svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .star path { fill: currentColor; stroke: color-mix(in srgb, var(--ink) 12%, transparent); stroke-width: 1; stroke-linejoin: round; }
+    .star.on { color: var(--gold); }
+    .star.on path { stroke: color-mix(in srgb, var(--gold) 70%, #000); }
+    .star:hover { transform: translateY(-3px) rotate(-6deg); }
+    .star:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 60%, transparent); outline-offset: 2px; }
+    .star.pop { animation: pop .45s cubic-bezier(.3,1.8,.5,1); }
+    @keyframes pop { 0% { transform: scale(.7); } 60% { transform: scale(1.25) rotate(8deg); } 100% { transform: scale(1); } }
+
+    .caption {
+      text-align: center; min-height: 28px;
+      font-family: Fraunces, Georgia, serif; font-style: italic;
+      font-size: 19px; color: var(--muted);
+      transition: color .2s;
+    }
+    .caption.set { color: var(--ink); }
+
+    .fine { text-align: center; font-size: 13px; color: var(--muted); margin: 18px 0 0; }
+
+    /* ---------- panels ---------- */
+    .panel { display: none; }
+    .panel.active { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1); }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+    .mini-stars { text-align: center; color: var(--gold); letter-spacing: 3px; font-size: 18px; margin-bottom: 8px; }
+    .mini-stars .off { color: var(--line); }
+
+    label.block { display: block; font-weight: 600; font-size: 14px; margin: 22px 0 10px; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      position: relative;
+    }
+    .chip input { position: absolute; opacity: 0; pointer-events: none; }
+    .chip span {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 14px;
+      background: var(--paper);
+      cursor: pointer;
+      transition: all .15s ease;
+      user-select: none;
+    }
+    .chip input:checked + span {
+      background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
+      transform: translateY(-1px);
+    }
+    .chip input:focus-visible + span { outline: 3px solid color-mix(in srgb, var(--accent) 50%, transparent); outline-offset: 2px; }
+
+    textarea, input[type="text"], input[type="email"] {
+      width: 100%;
+      font: inherit; color: inherit;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    textarea:focus, input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent); }
+    ::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 380px) { .row { grid-template-columns: 1fr; } }
+    .optional { font-weight: 400; color: var(--muted); }
+
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      margin-top: 22px;
+      padding: 15px 18px;
+      border: 0; border-radius: 999px;
+      background: var(--accent); color: var(--accent-ink);
+      font: 600 16px/1 Inter, system-ui, sans-serif;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .12s ease, filter .15s;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:active { transform: scale(.98); }
+    .btn[disabled] { opacity: .6; cursor: default; }
+    .link-btn {
+      display: block; margin: 14px auto 0;
+      background: none; border: 0; color: var(--muted);
+      font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+    }
+
+    /* redirect progress ring */
+    .ring { width: 72px; height: 72px; margin: 22px auto 0; display: block; }
+    .ring circle { fill: none; stroke-width: 5; }
+    .ring .track { stroke: var(--line); }
+    .ring .bar { stroke: var(--gold); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%;
+      stroke-dasharray: 201; stroke-dashoffset: 201; }
+    .ring.go .bar { transition: stroke-dashoffset var(--dur, 3s) linear; stroke-dashoffset: 0; }
+    .ring text { font: 600 20px Inter, sans-serif; fill: var(--ink); }
+
+    .thanks-emoji { font-size: 46px; text-align: center; margin-bottom: 10px; }
+
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 22px; }
+
+    /* confetti bits */
+    .bit {
+      position: fixed; top: -20px; z-index: 5; pointer-events: none;
+      font-size: 22px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: .9; } }
+
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="ticket">
+
+      <!-- Step 1: rating -->
+      <section class="panel active" id="step-rate" aria-labelledby="rate-title">
+        <div class="plate" id="plate" aria-hidden="true">🍽️</div>
+        <p class="eyebrow">Thanks for dining with us</p>
+        <h1 id="rate-title">How was your <em>meal</em> today?</h1>
+        <p class="lede">Tap a star. It takes ten seconds and helps our kitchen more than you'd think.</p>
+
+        <fieldset class="stars" id="stars">
+          <legend>Rate your visit from 1 to 5 stars</legend>
+        </fieldset>
+        <div class="caption" id="caption" aria-live="polite">Tap to rate</div>
+      </section>
+
+      <!-- Step 2a: happy path (4–5 stars) -->
+      <section class="panel" id="step-happy" aria-labelledby="happy-title">
+        <div class="mini-stars" id="happy-stars" aria-hidden="true"></div>
+        <h2 id="happy-title">That makes our <em>day</em>.</h2>
+        <p class="lede">Would you share that with others? We're taking you to leave a quick public review.</p>
+        <svg class="ring" id="ring" viewBox="0 0 72 72" aria-hidden="true">
+          <circle class="track" cx="36" cy="36" r="32" />
+          <circle class="bar" cx="36" cy="36" r="32" />
+          <text x="36" y="43" text-anchor="middle" id="count">3</text>
+        </svg>
+        <a class="btn" id="review-link" href="#" rel="noopener">Leave a review now →</a>
+        <button type="button" class="link-btn" id="happy-back">Change my rating</button>
+      </section>
+
+      <!-- Step 2b: feedback path (1–3 stars) -->
+      <section class="panel" id="step-feedback" aria-labelledby="fb-title">
+        <div class="mini-stars" id="fb-stars" aria-hidden="true"></div>
+        <h2 id="fb-title">We're sorry we <em>missed</em> the mark.</h2>
+        <p class="lede">Tell us what went wrong. This goes straight to the owner — not the internet.</p>
+
+        <form id="fb-form" novalidate>
+          <label class="block" id="tags-label">What didn't you like?</label>
+          <div class="chips" role="group" aria-labelledby="tags-label" id="chips"></div>
+
+          <label class="block" for="fb-text">Tell us more <span class="optional">(the more specific, the better)</span></label>
+          <textarea id="fb-text" name="message" placeholder="e.g. My pasta came out lukewarm and we waited 25 minutes for the check."></textarea>
+
+          <label class="block">Can we make it right? <span class="optional">(optional)</span></label>
+          <div class="row">
+            <input type="text" name="name" placeholder="Your name" autocomplete="name" aria-label="Your name" />
+            <input type="text" name="contact" placeholder="Phone or email" autocomplete="email" aria-label="Phone or email" />
+          </div>
+
+          <button class="btn" type="submit" id="fb-submit">Send feedback</button>
+          <button type="button" class="link-btn" id="fb-back">Change my rating</button>
+        </form>
+      </section>
+
+      <!-- Step 3: feedback received -->
+      <section class="panel" id="step-done" aria-labelledby="done-title">
+        <div class="thanks-emoji" aria-hidden="true">🤝</div>
+        <h2 id="done-title">Thank you for <em>telling us</em>.</h2>
+        <p class="lede">Honest feedback is how we get better. We read every note, and if you left your details, we'll be in touch.</p>
+        <p class="fine">We hope to see you again soon.</p>
+      </section>
+
+    </div>
+    <footer>Your feedback is private unless you choose to post a public review.</footer>
+  </main>
+
+  <script>
+    /* ------------------------------------------------------------------
+       Settings — edit these.
+       ------------------------------------------------------------------ */
+    const CONFIG = {
+      // Where 4- and 5-star guests are sent.
+      reviewUrl: "https://app.reviewflowz.com/l/aJGJ5nMXNVmWpGb6u0JIk",
+
+      // Seconds to wait before redirecting happy guests.
+      redirectSeconds: 3,
+
+      // Where 1–3 star feedback is sent. Any endpoint that accepts a JSON POST
+      // works (e.g. a Formspree form URL like "https://formspree.io/f/xxxxxxx").
+      feedbackEndpoint: "",
+
+      // Fallback if no endpoint is set: opens the guest's email app addressed here.
+      feedbackEmail: "",
+    };
+
+    const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
+    const PLATES = ["🍽️", "😞", "😕", "😐", "😋", "🤩"];
+    const TAGS = [
+      "🍲 Food quality", "🌡️ Temperature", "⏱️ Wait time", "🙋 Service",
+      "🧾 Order was wrong", "💲 Price / value", "🧼 Cleanliness", "🔊 Atmosphere",
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const starsEl = $("stars"), captionEl = $("caption"), plateEl = $("plate");
+    let rating = 0, redirectTimer = null;
+
+    const STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
+
+    // Build stars
+    for (let i = 1; i <= 5; i++) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "star";
+      b.dataset.value = i;
+      b.setAttribute("aria-label", `${i} star${i > 1 ? "s" : ""} — ${LABELS[i]}`);
+      b.innerHTML = STAR_SVG;
+      b.addEventListener("mouseenter", () => paint(i, true));
+      b.addEventListener("focus", () => paint(i, true));
+      b.addEventListener("click", () => choose(i));
+      starsEl.appendChild(b);
+    }
+    starsEl.addEventListener("mouseleave", () => paint(rating, false));
+
+    // Keyboard: arrows move across stars
+    starsEl.addEventListener("keydown", (e) => {
+      const cur = Number(document.activeElement?.dataset?.value || 0);
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); focusStar(Math.min(5, cur + 1)); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); focusStar(Math.max(1, cur - 1)); }
+    });
+    function focusStar(n) { starsEl.querySelector(`[data-value="${n}"]`)?.focus(); }
+
+    function paint(n, preview) {
+      starsEl.querySelectorAll(".star").forEach((s) => s.classList.toggle("on", Number(s.dataset.value) <= n));
+      captionEl.textContent = n ? LABELS[n] : "Tap to rate";
+      captionEl.classList.toggle("set", !!n);
+      plateEl.textContent = PLATES[n];
+      plateEl.classList.toggle("spin", !!n && preview);
+    }
+
+    function miniStars(n) {
+      return "★".repeat(n) + `<span class="off">${"★".repeat(5 - n)}</span>`;
+    }
+
+    function show(id) {
+      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === id));
+      const h = document.querySelector(`#${id} h1, #${id} h2`);
+      if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function choose(n) {
+      rating = n;
+      paint(n, false);
+      const btn = starsEl.querySelector(`[data-value="${n}"]`);
+      btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop");
+
+      // Short pause so the guest sees their pick land.
+      setTimeout(() => (n >= 4 ? goHappy(n) : goFeedback(n)), 450);
+    }
+
+    /* ---------- 4–5 stars: celebrate + redirect ---------- */
+    function goHappy(n) {
+      $("happy-stars").innerHTML = miniStars(n);
+      $("review-link").href = CONFIG.reviewUrl;
+      show("step-happy");
+      confetti();
+
+      const secs = CONFIG.redirectSeconds;
+      const ring = $("ring"), count = $("count");
+      ring.classList.remove("go");
+      ring.style.setProperty("--dur", secs + "s");
+      void ring.offsetWidth;
+      ring.classList.add("go");
+
+      let left = secs;
+      count.textContent = left;
+      clearInterval(redirectTimer);
+      redirectTimer = setInterval(() => {
+        left -= 1;
+        count.textContent = Math.max(left, 0);
+        if (left <= 0) { clearInterval(redirectTimer); redirect(); }
+      }, 1000);
+    }
+
+    function redirect() {
+      try { window.top.location.href = CONFIG.reviewUrl; }
+      catch { window.location.href = CONFIG.reviewUrl; }
+    }
+
+    function confetti() {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const pieces = ["⭐", "✨", "🍋", "🌿", "🍅", "⭐"];
+      for (let i = 0; i < 26; i++) {
+        const s = document.createElement("span");
+        s.className = "bit";
+        s.textContent = pieces[i % pieces.length];
+        s.style.left = Math.random() * 100 + "vw";
+        s.style.fontSize = 14 + Math.random() * 16 + "px";
+        s.style.animationDuration = 1.8 + Math.random() * 1.6 + "s";
+        s.style.animationDelay = Math.random() * 0.4 + "s";
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 4200);
+      }
+    }
+
+    /* ---------- 1–3 stars: private feedback ---------- */
+    const chipsEl = $("chips");
+    TAGS.forEach((t, i) => {
+      const l = document.createElement("label");
+      l.className = "chip";
+      l.innerHTML = `<input type="checkbox" name="tags" value="${t.replace(/^\S+\s/, "")}" id="tag-${i}"><span>${t}</span>`;
+      chipsEl.appendChild(l);
+    });
+
+    function goFeedback(n) {
+      $("fb-stars").innerHTML = miniStars(n);
+      show("step-feedback");
+    }
+
+    $("fb-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const tags = [...form.querySelectorAll('input[name="tags"]:checked')].map((c) => c.value);
+      const message = form.message.value.trim();
+
+      if (!tags.length && !message) {
+        $("fb-text").focus();
+        $("fb-text").placeholder = "Pick a topic above or write a few words — anything helps.";
+        return;
+      }
+
+      const payload = {
+        rating,
+        tags,
+        message,
+        name: form.name.value.trim(),
+        contact: form.contact.value.trim(),
+        submittedAt: new Date().toISOString(),
+      };
+
+      const btn = $("fb-submit");
+      btn.disabled = true; btn.textContent = "Sending…";
+
+      try {
+        if (CONFIG.feedbackEndpoint) {
+          const res = await fetch(CONFIG.feedbackEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+        } else if (CONFIG.feedbackEmail) {
+          const body = [
+            `Rating: ${rating}/5`,
+            `Issues: ${tags.join(", ") || "—"}`,
+            "", message || "—", "",
+            `Name: ${payload.name || "—"}`,
+            `Contact: ${payload.contact || "—"}`,
+          ].join("\n");
+          location.href = `mailto:${CONFIG.feedbackEmail}?subject=${encodeURIComponent(`Guest feedback (${rating}★)`)}&body=${encodeURIComponent(body)}`;
+        } else {
+          console.warn("No feedbackEndpoint or feedbackEmail configured — feedback was not sent.", payload);
+        }
+        show("step-done");
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false; btn.textContent = "Try again";
+        alert("Sorry, that didn't go through. Please try once more.");
+      }
+    });
+
+    /* ---------- back links ---------- */
+    function back() {
+      clearInterval(redirectTimer);
+      $("ring").classList.remove("go");
+      show("step-rate");
+    }
+    $("happy-back").addEventListener("click", back);
+    $("fb-back").addEventListener("click", back);
+  </script>
+</body>
+</html>
