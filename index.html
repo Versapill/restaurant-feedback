@@ -375,15 +375,21 @@
 
       try {
         if (CONFIG.sheetsUrl) {
-          // Google Apps Script answers through a cross-site redirect whose
-          // response browsers often can't read, so send "no-cors": the answer
-          // still reaches the sheet; only a network failure throws here.
-          await fetch(CONFIG.sheetsUrl, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
-          });
+          // Google Apps Script saves the answer as soon as the POST arrives,
+          // then redirects to a reply page the browser may fail to load. A
+          // beacon doesn't wait for that reply, so only a real send failure
+          // counts as an error.
+          const body = JSON.stringify(payload);
+          const queued = navigator.sendBeacon?.(CONFIG.sheetsUrl, body);
+          if (!queued) {
+            await fetch(CONFIG.sheetsUrl, {
+              method: "POST",
+              mode: "no-cors",
+              keepalive: true,
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body,
+            });
+          }
         } else {
           console.warn("No sheetsUrl configured — feedback was not saved.", payload);
         }

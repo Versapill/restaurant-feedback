@@ -35,7 +35,3 @@ Each answer becomes a row: **Date · Stars · Answer**.
 To check it's live, open the Web app URL in a browser: it should say `"Feedback collector is running."` The **Answers** tab is created with the first answer.
 
 If you edit the script later, use **Deploy → Manage deployments → Edit → New version** so the same URL keeps working.
-
-## Printing
-
-`print/table-cards-A4.pdf` has four table cards per A4 page (cut along the dashed lines). `print/qr-code.png` is the QR code on its own. Both point to https://versapill.github.io/restaurant-feedback/.
