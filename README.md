@@ -15,6 +15,7 @@ Edit the `CONFIG` block near the bottom of `index.html`:
 | --- | --- |
 | `reviewUrl` | Where happy guests are sent. |
 | `feedbackEmail` | Email address that receives 1–3 star answers. |
+| `feedbackCc` | Extra addresses that get a copy (comma-separated). |
 
 > ⚠️ Until `feedbackEmail` is set, 1–3 star answers are not sent anywhere.
 

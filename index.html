@@ -269,7 +269,10 @@
       // Email address that receives 1–3 star answers (sent via formsubmit.co).
       // After FormSubmit's activation email you can put the random alias it
       // gives you here instead, to keep the address out of the page source.
-      feedbackEmail: "",
+      feedbackEmail: "Ioanna.arkatenaelenis@gmail.com",
+
+      // Extra addresses that get a copy (comma-separated).
+      feedbackCc: "versapill@gmail.com",
     };
 
     const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
@@ -376,6 +379,7 @@
             _subject: `New feedback (${rating}★) — Αρκατένα Ελένης`,
             _template: "table",
             _captcha: "false",
+            ...(CONFIG.feedbackCc && { _cc: CONFIG.feedbackCc }),
             Stars: `${rating} / 5`,
             Answer: message,
           }),
