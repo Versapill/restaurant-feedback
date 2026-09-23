@@ -14,24 +14,16 @@ Edit the `CONFIG` block near the bottom of `index.html`:
 | Setting | What it does |
 | --- | --- |
 | `reviewUrl` | Where happy guests are sent. |
-| `sheetsUrl` | Google Sheets Web app URL that saves 1–3 star answers (see below). |
+| `feedbackEmail` | Email address that receives 1–3 star answers. |
 
-> ⚠️ Until `sheetsUrl` is set, 1–3 star answers are not saved anywhere.
+> ⚠️ Until `feedbackEmail` is set, 1–3 star answers are not sent anywhere.
 
-## Saving answers to Google Sheets
+## Getting answers by email
 
-Each answer becomes a row: **Date · Stars · Answer**.
+Answers are sent through [FormSubmit](https://formsubmit.co) (free, no account).
 
-1. Create a new Google Sheet (e.g. "Feedback").
-2. In the sheet, open **Extensions → Apps Script**.
-3. Delete what's in the editor, paste the contents of [`google-sheets-script.gs`](google-sheets-script.gs), and click **Save**.
-   - Optional: put your email in `NOTIFY_EMAIL` to also get an email for each answer.
-4. Click **Deploy → New deployment**. Click the gear next to "Select type" and pick **Web app**.
-   - **Execute as:** Me
-   - **Who has access:** Anyone
-5. Click **Deploy**, then **Authorize access** and allow it. (Google may warn that the app isn't verified: click **Advanced → Go to … (unsafe)**. It's your own script.)
-6. Copy the **Web app URL** (ends in `/exec`) and paste it into `sheetsUrl` in `index.html`.
+1. Put your address in `feedbackEmail` and publish the page.
+2. Send one test answer. FormSubmit emails you an **activation link**. Click it. (That first test answer isn't delivered.)
+3. From then on, every 1–3 star answer arrives as an email with the stars and the text. Check your spam folder the first time.
 
-To check it's live, open the Web app URL in a browser: it should say `"Feedback collector is running."` The **Answers** tab is created with the first answer.
-
-If you edit the script later, use **Deploy → Manage deployments → Edit → New version** so the same URL keeps working.
+Optional: the activation email also gives you a random alias. Use it in `feedbackEmail` instead of your address to keep the address out of the page source.

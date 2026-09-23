@@ -266,10 +266,10 @@
       // Where 4- and 5-star guests are sent.
       reviewUrl: "https://app.reviewflowz.com/l/aJGJ5nMXNVmWpGb6u0JIk",
 
-      // Google Sheets Web app URL that saves 1–3 star answers
-      // (see google-sheets-script.gs). Looks like
-      // "https://script.google.com/macros/s/XXXXXXXX/exec".
-      sheetsUrl: "https://script.google.com/macros/s/AKfycby-FXv4oeEATOjldGfnFpXV1jxD9O1trEs4_huEMN09-y_TIQeKA33XMV602ciDQ6dztg/exec",
+      // Email address that receives 1–3 star answers (sent via formsubmit.co).
+      // After FormSubmit's activation email you can put the random alias it
+      // gives you here instead, to keep the address out of the page source.
+      feedbackEmail: "",
     };
 
     const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
@@ -364,35 +364,24 @@
         return;
       }
 
-      const payload = {
-        rating,
-        message,
-        submittedAt: new Date().toISOString(),
-      };
-
       const btn = $("fb-submit");
       btn.disabled = true; btn.textContent = "Sending…";
 
       try {
-        if (CONFIG.sheetsUrl) {
-          // Google Apps Script saves the answer as soon as the POST arrives,
-          // then redirects to a reply page the browser may fail to load. A
-          // beacon doesn't wait for that reply, so only a real send failure
-          // counts as an error.
-          const body = JSON.stringify(payload);
-          const queued = navigator.sendBeacon?.(CONFIG.sheetsUrl, body);
-          if (!queued) {
-            await fetch(CONFIG.sheetsUrl, {
-              method: "POST",
-              mode: "no-cors",
-              keepalive: true,
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body,
-            });
-          }
-        } else {
-          console.warn("No sheetsUrl configured — feedback was not saved.", payload);
-        }
+        if (!CONFIG.feedbackEmail) throw new Error("No feedbackEmail configured");
+        const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(CONFIG.feedbackEmail)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            _subject: `New feedback (${rating}★) — Αρκατένα Ελένης`,
+            _template: "table",
+            _captcha: "false",
+            Stars: `${rating} / 5`,
+            Answer: message,
+          }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || String(out.success) !== "true") throw new Error(out.message || "HTTP " + res.status);
         show("step-done");
       } catch (err) {
         console.error(err);
