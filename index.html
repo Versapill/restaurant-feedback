@@ -375,16 +375,15 @@
 
       try {
         if (CONFIG.sheetsUrl) {
-          // Sent as plain text so the browser doesn't need a CORS preflight,
-          // which Google Apps Script can't answer.
-          const res = await fetch(CONFIG.sheetsUrl, {
+          // Google Apps Script answers through a cross-site redirect whose
+          // response browsers often can't read, so send "no-cors": the answer
+          // still reaches the sheet; only a network failure throws here.
+          await fetch(CONFIG.sheetsUrl, {
             method: "POST",
+            mode: "no-cors",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload),
           });
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const out = await res.json();
-          if (!out.ok) throw new Error(out.error || "Not saved");
         } else {
           console.warn("No sheetsUrl configured — feedback was not saved.", payload);
         }
