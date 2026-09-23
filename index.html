@@ -165,30 +165,6 @@
     .mini-stars { text-align: center; color: var(--gold); letter-spacing: 3px; font-size: 18px; margin-bottom: 8px; }
     .mini-stars .off { color: var(--line); }
 
-    label.block { display: block; font-weight: 600; font-size: 14px; margin: 22px 0 10px; }
-
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip {
-      position: relative;
-    }
-    .chip input { position: absolute; opacity: 0; pointer-events: none; }
-    .chip span {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 14px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      font-size: 14px;
-      background: var(--paper);
-      cursor: pointer;
-      transition: all .15s ease;
-      user-select: none;
-    }
-    .chip input:checked + span {
-      background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
-      transform: translateY(-1px);
-    }
-    .chip input:focus-visible + span { outline: 3px solid color-mix(in srgb, var(--accent) 50%, transparent); outline-offset: 2px; }
-
     textarea, input[type="text"], input[type="email"] {
       width: 100%;
       font: inherit; color: inherit;
@@ -198,13 +174,10 @@
       padding: 12px 14px;
       transition: border-color .15s, box-shadow .15s;
     }
-    textarea { min-height: 120px; resize: vertical; }
+    textarea { min-height: 140px; resize: vertical; margin-top: 24px; }
     textarea:focus, input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent); }
     ::placeholder { color: color-mix(in srgb, var(--muted) 80%, transparent); }
 
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 380px) { .row { grid-template-columns: 1fr; } }
-    .optional { font-weight: 400; color: var(--muted); }
 
     .btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -266,21 +239,11 @@
       <!-- Step 2b: feedback path (1–3 stars) -->
       <section class="panel" id="step-feedback" aria-labelledby="fb-title">
         <div class="mini-stars" id="fb-stars" aria-hidden="true"></div>
-        <h2 id="fb-title">We're sorry we <em>missed</em> the mark.</h2>
-        <p class="lede">Tell us what went wrong. This goes straight to the owner — not the internet.</p>
+        <h2 id="fb-title">How can we <em>improve</em> your experience?</h2>
+        <p class="lede">Your answer goes straight to the owner — not the internet.</p>
 
         <form id="fb-form" novalidate>
-          <label class="block" id="tags-label">What didn't you like?</label>
-          <div class="chips" role="group" aria-labelledby="tags-label" id="chips"></div>
-
-          <label class="block" for="fb-text">Tell us more <span class="optional">(the more specific, the better)</span></label>
-          <textarea id="fb-text" name="message" placeholder="e.g. My pasta came out lukewarm and we waited 25 minutes for the check."></textarea>
-
-          <label class="block">Can we make it right? <span class="optional">(optional)</span></label>
-          <div class="row">
-            <input type="text" name="name" placeholder="Your name" autocomplete="name" aria-label="Your name" />
-            <input type="text" name="contact" placeholder="Phone or email" autocomplete="email" aria-label="Phone or email" />
-          </div>
+          <textarea id="fb-text" name="message" aria-labelledby="fb-title" placeholder="Tell us in a few words…"></textarea>
 
           <button class="btn" type="submit" id="fb-submit">Send feedback</button>
           <button type="button" class="link-btn" id="fb-back">Change my rating</button>
@@ -291,7 +254,7 @@
       <section class="panel" id="step-done" aria-labelledby="done-title">
         <div class="thanks-emoji" aria-hidden="true">🤝</div>
         <h2 id="done-title">Thank you for <em>telling us</em>.</h2>
-        <p class="lede">Honest feedback is how we get better. We read every note, and if you left your details, we'll be in touch.</p>
+        <p class="lede">Honest feedback is how we get better. We read every note.</p>
         <p class="fine">We hope to see you again soon.</p>
       </section>
 
@@ -317,10 +280,6 @@
 
     const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
     const PLATES = ["🍽️", "😞", "😕", "😐", "😋", "🤩"];
-    const TAGS = [
-      "🍲 Food quality", "🌡️ Temperature", "⏱️ Wait time", "🙋 Service",
-      "🧾 Order was wrong", "💲 Price / value", "🧼 Cleanliness", "🔊 Atmosphere",
-    ];
 
     const $ = (id) => document.getElementById(id);
     const starsEl = $("stars"), captionEl = $("caption"), plateEl = $("plate");
@@ -403,14 +362,6 @@
 
     /* ---------- 1–3 stars: private feedback ---------- */
 
-    const chipsEl = $("chips");
-    TAGS.forEach((t, i) => {
-      const l = document.createElement("label");
-      l.className = "chip";
-      l.innerHTML = `<input type="checkbox" name="tags" value="${t.replace(/^\S+\s/, "")}" id="tag-${i}"><span>${t}</span>`;
-      chipsEl.appendChild(l);
-    });
-
     function goFeedback(n) {
       $("fb-stars").innerHTML = miniStars(n);
       show("step-feedback");
@@ -419,21 +370,17 @@
     $("fb-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.currentTarget;
-      const tags = [...form.querySelectorAll('input[name="tags"]:checked')].map((c) => c.value);
       const message = form.message.value.trim();
 
-      if (!tags.length && !message) {
+      if (!message) {
         $("fb-text").focus();
-        $("fb-text").placeholder = "Pick a topic above or write a few words — anything helps.";
+        $("fb-text").placeholder = "A few words is plenty — anything helps.";
         return;
       }
 
       const payload = {
         rating,
-        tags,
         message,
-        name: form.name.value.trim(),
-        contact: form.contact.value.trim(),
         submittedAt: new Date().toISOString(),
       };
 
@@ -449,13 +396,7 @@
           });
           if (!res.ok) throw new Error("HTTP " + res.status);
         } else if (CONFIG.feedbackEmail) {
-          const body = [
-            `Rating: ${rating}/5`,
-            `Issues: ${tags.join(", ") || "—"}`,
-            "", message || "—", "",
-            `Name: ${payload.name || "—"}`,
-            `Contact: ${payload.contact || "—"}`,
-          ].join("\n");
+          const body = `Rating: ${rating}/5\n\n${message}`;
           location.href = `mailto:${CONFIG.feedbackEmail}?subject=${encodeURIComponent(`Guest feedback (${rating}★)`)}&body=${encodeURIComponent(body)}`;
         } else {
           console.warn("No feedbackEndpoint or feedbackEmail configured — feedback was not sent.", payload);

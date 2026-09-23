@@ -5,7 +5,7 @@ A single-file (`index.html`) rating page for a restaurant. No build step. Host i
 ## How it works
 
 - **4–5 stars:** the guest is redirected to the public review page immediately.
-- **1–3 stars:** a private feedback form with quick-pick topics, a comment box and optional contact details.
+- **1–3 stars:** a private feedback form asking "How can we improve your experience?".
 
 ## Setup
 
