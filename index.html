@@ -227,26 +227,9 @@
       font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
     }
 
-    /* redirect progress ring */
-    .ring { width: 72px; height: 72px; margin: 22px auto 0; display: block; }
-    .ring circle { fill: none; stroke-width: 5; }
-    .ring .track { stroke: var(--line); }
-    .ring .bar { stroke: var(--gold); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%;
-      stroke-dasharray: 201; stroke-dashoffset: 201; }
-    .ring.go .bar { transition: stroke-dashoffset var(--dur, 3s) linear; stroke-dashoffset: 0; }
-    .ring text { font: 600 20px Inter, sans-serif; fill: var(--ink); }
-
     .thanks-emoji { font-size: 46px; text-align: center; margin-bottom: 10px; }
 
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 22px; }
-
-    /* confetti bits */
-    .bit {
-      position: fixed; top: -20px; z-index: 5; pointer-events: none;
-      font-size: 22px;
-      animation: fall linear forwards;
-    }
-    @keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: .9; } }
 
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -270,20 +253,6 @@
           <legend>Rate your visit from 1 to 5 stars</legend>
         </fieldset>
         <div class="caption" id="caption" aria-live="polite">Tap to rate</div>
-      </section>
-
-      <!-- Step 2a: happy path (4–5 stars) -->
-      <section class="panel" id="step-happy" aria-labelledby="happy-title">
-        <div class="mini-stars" id="happy-stars" aria-hidden="true"></div>
-        <h2 id="happy-title">That makes our <em>day</em>.</h2>
-        <p class="lede">Would you share that with others? We're taking you to leave a quick public review.</p>
-        <svg class="ring" id="ring" viewBox="0 0 72 72" aria-hidden="true">
-          <circle class="track" cx="36" cy="36" r="32" />
-          <circle class="bar" cx="36" cy="36" r="32" />
-          <text x="36" y="43" text-anchor="middle" id="count">3</text>
-        </svg>
-        <a class="btn" id="review-link" href="#" rel="noopener">Leave a review now →</a>
-        <button type="button" class="link-btn" id="happy-back">Change my rating</button>
       </section>
 
       <!-- Step 2b: feedback path (1–3 stars) -->
@@ -330,9 +299,6 @@
       // Where 4- and 5-star guests are sent.
       reviewUrl: "https://app.reviewflowz.com/l/aJGJ5nMXNVmWpGb6u0JIk",
 
-      // Seconds to wait before redirecting happy guests.
-      redirectSeconds: 3,
-
       // Where 1–3 star feedback is sent. Any endpoint that accepts a JSON POST
       // works (e.g. a Formspree form URL like "https://formspree.io/f/xxxxxxx").
       feedbackEndpoint: "",
@@ -350,7 +316,7 @@
 
     const $ = (id) => document.getElementById(id);
     const starsEl = $("stars"), captionEl = $("caption"), plateEl = $("plate");
-    let rating = 0, redirectTimer = null;
+    let rating = 0;
 
     const STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
 
@@ -402,32 +368,10 @@
       const btn = starsEl.querySelector(`[data-value="${n}"]`);
       btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop");
 
+      // 4–5 stars go straight to the public review page; 1–3 stay here.
+      if (n >= 4) return redirect();
       // Short pause so the guest sees their pick land.
-      setTimeout(() => (n >= 4 ? goHappy(n) : goFeedback(n)), 450);
-    }
-
-    /* ---------- 4–5 stars: celebrate + redirect ---------- */
-    function goHappy(n) {
-      $("happy-stars").innerHTML = miniStars(n);
-      $("review-link").href = CONFIG.reviewUrl;
-      show("step-happy");
-      confetti();
-
-      const secs = CONFIG.redirectSeconds;
-      const ring = $("ring"), count = $("count");
-      ring.classList.remove("go");
-      ring.style.setProperty("--dur", secs + "s");
-      void ring.offsetWidth;
-      ring.classList.add("go");
-
-      let left = secs;
-      count.textContent = left;
-      clearInterval(redirectTimer);
-      redirectTimer = setInterval(() => {
-        left -= 1;
-        count.textContent = Math.max(left, 0);
-        if (left <= 0) { clearInterval(redirectTimer); redirect(); }
-      }, 1000);
+      setTimeout(() => goFeedback(n), 450);
     }
 
     function redirect() {
@@ -435,23 +379,8 @@
       catch { window.location.href = CONFIG.reviewUrl; }
     }
 
-    function confetti() {
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const pieces = ["⭐", "✨", "🍋", "🌿", "🍅", "⭐"];
-      for (let i = 0; i < 26; i++) {
-        const s = document.createElement("span");
-        s.className = "bit";
-        s.textContent = pieces[i % pieces.length];
-        s.style.left = Math.random() * 100 + "vw";
-        s.style.fontSize = 14 + Math.random() * 16 + "px";
-        s.style.animationDuration = 1.8 + Math.random() * 1.6 + "s";
-        s.style.animationDelay = Math.random() * 0.4 + "s";
-        document.body.appendChild(s);
-        setTimeout(() => s.remove(), 4200);
-      }
-    }
-
     /* ---------- 1–3 stars: private feedback ---------- */
+
     const chipsEl = $("chips");
     TAGS.forEach((t, i) => {
       const l = document.createElement("label");
@@ -518,13 +447,7 @@
     });
 
     /* ---------- back links ---------- */
-    function back() {
-      clearInterval(redirectTimer);
-      $("ring").classList.remove("go");
-      show("step-rate");
-    }
-    $("happy-back").addEventListener("click", back);
-    $("fb-back").addEventListener("click", back);
+    $("fb-back").addEventListener("click", () => show("step-rate"));
   </script>
 </body>
 </html>
