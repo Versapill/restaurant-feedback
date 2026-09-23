@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>How Was Your Meal?</title>
-  <meta name="description" content="Tell us how your meal was — it takes ten seconds." />
+  <title>Αρκατένα Ελένης · How Was Your Meal?</title>
+  <meta name="description" content="Tell Αρκατένα Ελένης how your meal was — it takes ten seconds." />
   <meta name="theme-color" content="#f6efe4" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -93,16 +93,22 @@
       background: radial-gradient(circle at 8px 12px, var(--paper) 6px, transparent 6.5px) 0 0 / 16px 12px repeat-x;
     }
 
-    .plate {
-      width: 88px; height: 88px; margin: 0 auto 18px;
-      display: grid; place-items: center;
+    .brand { text-align: center; margin-bottom: 20px; }
+    .logo {
+      display: block;
+      width: 164px; height: 164px; margin: 0 auto 10px;
       border-radius: 50%;
-      background: radial-gradient(circle, var(--card) 52%, var(--line) 53%, var(--line) 56%, var(--card) 57%);
+      background: #fff;
       border: 1px solid var(--line);
-      font-size: 38px;
-      transition: transform .5s cubic-bezier(.3,1.6,.5,1);
+      box-shadow: 0 6px 20px -8px rgba(60, 40, 20, .35);
+      object-fit: cover;
     }
-    .plate.spin { transform: rotate(-14deg) scale(1.06); }
+    .brand-name {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 20px; font-weight: 600;
+      color: var(--accent);
+      margin: 0;
+    }
 
     .eyebrow {
       text-align: center;
@@ -206,9 +212,13 @@
   <main>
     <div class="ticket">
 
+      <header class="brand">
+        <img class="logo" src="logo.jpg" alt="Αρκατένα Ελένης logo" width="164" height="164" />
+        <p class="brand-name" lang="el">Αρκατένα Ελένης</p>
+      </header>
+
       <!-- Step 1: rating -->
       <section class="panel active" id="step-rate" aria-labelledby="rate-title">
-        <div class="plate" id="plate" aria-hidden="true">🍽️</div>
         <p class="eyebrow">Thanks for dining with us</p>
         <h1 id="rate-title">How was your <em>meal</em> today?</h1>
         <p class="lede">Tap a star. It takes ten seconds and helps our kitchen more than you'd think.</p>
@@ -265,10 +275,9 @@
     };
 
     const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
-    const PLATES = ["🍽️", "😞", "😕", "😐", "😋", "🤩"];
 
     const $ = (id) => document.getElementById(id);
-    const starsEl = $("stars"), captionEl = $("caption"), plateEl = $("plate");
+    const starsEl = $("stars"), captionEl = $("caption");
     let rating = 0;
 
     const STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
@@ -300,8 +309,6 @@
       starsEl.querySelectorAll(".star").forEach((s) => s.classList.toggle("on", Number(s.dataset.value) <= n));
       captionEl.textContent = n ? LABELS[n] : "Tap to rate";
       captionEl.classList.toggle("set", !!n);
-      plateEl.textContent = PLATES[n];
-      plateEl.classList.toggle("spin", !!n && preview);
     }
 
     function show(id) {

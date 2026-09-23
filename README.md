@@ -1,6 +1,6 @@
 # Guest Feedback Page
 
-A single-file (`index.html`) rating page for a restaurant. No build step. Host it anywhere static (GitHub Pages, Netlify, etc.) and point a table QR code at it.
+A rating page for Αρκατένα Ελένης: `index.html` plus the logo (`logo.jpg`). No build step; keep both files together when hosting. Host it anywhere static (GitHub Pages, Netlify, etc.) and point a table QR code at it.
 
 ## How it works
 
