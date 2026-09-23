@@ -266,12 +266,10 @@
       // Where 4- and 5-star guests are sent.
       reviewUrl: "https://app.reviewflowz.com/l/aJGJ5nMXNVmWpGb6u0JIk",
 
-      // Where 1–3 star feedback is sent. Any endpoint that accepts a JSON POST
-      // works (e.g. a Formspree form URL like "https://formspree.io/f/xxxxxxx").
-      feedbackEndpoint: "",
-
-      // Fallback if no endpoint is set: opens the guest's email app addressed here.
-      feedbackEmail: "",
+      // Google Sheets Web app URL that saves 1–3 star answers
+      // (see google-sheets-script.gs). Looks like
+      // "https://script.google.com/macros/s/XXXXXXXX/exec".
+      sheetsUrl: "",
     };
 
     const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
@@ -376,18 +374,19 @@
       btn.disabled = true; btn.textContent = "Sending…";
 
       try {
-        if (CONFIG.feedbackEndpoint) {
-          const res = await fetch(CONFIG.feedbackEndpoint, {
+        if (CONFIG.sheetsUrl) {
+          // Sent as plain text so the browser doesn't need a CORS preflight,
+          // which Google Apps Script can't answer.
+          const res = await fetch(CONFIG.sheetsUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload),
           });
           if (!res.ok) throw new Error("HTTP " + res.status);
-        } else if (CONFIG.feedbackEmail) {
-          const body = `Rating: ${rating}/5\n\n${message}`;
-          location.href = `mailto:${CONFIG.feedbackEmail}?subject=${encodeURIComponent(`Guest feedback (${rating}★)`)}&body=${encodeURIComponent(body)}`;
+          const out = await res.json();
+          if (!out.ok) throw new Error(out.error || "Not saved");
         } else {
-          console.warn("No feedbackEndpoint or feedbackEmail configured — feedback was not sent.", payload);
+          console.warn("No sheetsUrl configured — feedback was not saved.", payload);
         }
         show("step-done");
       } catch (err) {
