@@ -275,6 +275,9 @@
       feedbackCc: "versapill@gmail.com",
     };
 
+    // Shown in error messages so it's clear which version is live.
+    const PAGE_VERSION = "v2-email";
+
     const LABELS = ["", "Not for me", "Could be better", "It was okay", "Really good", "Loved it!"];
 
     const $ = (id) => document.getElementById(id);
@@ -390,7 +393,8 @@
       } catch (err) {
         console.error(err);
         btn.disabled = false; btn.textContent = "Try again";
-        alert("Sorry, that didn't go through. Please try once more.");
+        // The detail in brackets helps the owner diagnose problems; guests can ignore it.
+        alert(`Sorry, that didn't go through. Please try once more.\n\n(${PAGE_VERSION}: ${err.message})`);
       }
     });
 
